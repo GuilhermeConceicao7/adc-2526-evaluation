@@ -23,7 +23,10 @@ import java.util.logging.Logger;
 public class UpdateAccountResource {
 
     private static final Logger LOG = Logger.getLogger(UpdateAccountResource.class.getName());
-    private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Datastore datastore =  DatastoreOptions.newBuilder()
+            .setProjectId("adc-evaluation-65595")
+            .build()
+            .getService();
     private static final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
     private final Gson g = new Gson();
@@ -42,8 +45,8 @@ public class UpdateAccountResource {
     }
 
     public static class Attributes {
-        public String email;
-        public String username;
+        public String phone;
+        public String address;
     }
 
     @POST
@@ -86,14 +89,10 @@ public class UpdateAccountResource {
             String requesterId = session.getString("username");
 
             String targetUserId = input.userId;
-            String newEmail = input.attributes.email;
-            String newUsername = input.attributes.username;
+            String newPhone = input.attributes.phone;
+            String newAddress = input.attributes.address;
 
-            if (!newUsername.equals("")) {
-                ApiError error = new ApiError("INVALID_INPUT", 9906,
-                        "The call is using input data not following the correct specification, username must be null");
-                return Response.status(Response.Status.FORBIDDEN).entity(error).build();
-            }
+
 
             Key userKey = userKeyFactory.newKey(targetUserId);
             Entity user = txn.get(userKey);
@@ -122,7 +121,8 @@ public class UpdateAccountResource {
 
 
             Entity updatedUser = Entity.newBuilder(user)
-                    .set("user_email", newEmail)
+                    .set("phone", newPhone)
+                    .set("address", newAddress)
                     .build();
 
             txn.put(updatedUser);

@@ -12,19 +12,18 @@ public class RegisterData {
 		public String username;
 		public String password;
 		public String confirmation;
-		public String email;
 		public String phone;
 		public String address;
 		public String role;
 
 		public Input() {}
 
-		public Input(String username, String password, String confirmation, String email, String phone,
+		public Input(String username, String password, String confirmation,  String phone,
 					 String address, String role) {
 			this.username = username;
 			this.password = password;
 			this.confirmation = confirmation;
-			this.email = email;
+
 			this.phone = phone;
 			this.address = address;
 			this.role = role;
@@ -43,11 +42,10 @@ public class RegisterData {
 		public boolean validRegistration() {
 			return nonEmptyOrBlankField(username) &&
 					nonEmptyOrBlankField(password) &&
-					nonEmptyOrBlankField(email) &&
 					nonEmptyOrBlankField(phone) &&
 					nonEmptyOrBlankField(address) &&
 					validRole() &&
-					email.contains("@") &&
+					username.contains("@") &&
 					password.equals(confirmation);
 		}
 

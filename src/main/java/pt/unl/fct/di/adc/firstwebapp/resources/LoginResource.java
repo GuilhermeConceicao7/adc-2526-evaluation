@@ -50,7 +50,10 @@ public class LoginResource {
 	 * Logger Object
 	 */
 	private static final Logger LOG = Logger.getLogger(LoginResource.class.getName());
-	private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+	private static final Datastore datastore = DatastoreOptions.newBuilder()
+			.setProjectId("adc-evaluation-65595")
+			.build()
+			.getService();
 	private static final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
 
@@ -102,14 +105,11 @@ public class LoginResource {
 
 			String cityLatLong = headers.getHeaderString("X-AppEngine-CityLatLong");
 			Entity log = Entity.newBuilder(logKey)
-					.set("user_login_ip", request.getRemoteAddr())
-					.set("user_login_host", request.getRemoteHost())
-					.set("user_login_latlon", cityLatLong != null
-							? cityLatLong
-							: "")
-					.set("user_login_city", headers.getHeaderString("X-AppEngine-City"))
-					.set("user_login_country", headers.getHeaderString("X-AppEngine-Country"))
-					.set("user_login_time", Timestamp.now())
+					.set("user_login_ip", request.getRemoteAddr() != null ? request.getRemoteAddr() : "")
+					.set("user_login_host", request.getRemoteHost() != null ? request.getRemoteHost() : "")
+					.set("user_login_latlon", cityLatLong != null ? cityLatLong : "")
+					.set("user_login_city", headers.getHeaderString("X-AppEngine-City") != null ? headers.getHeaderString("X-AppEngine-City") : "")
+					.set("user_login_country", headers.getHeaderString("X-AppEngine-Country") != null ? headers.getHeaderString("X-AppEngine-Country") : "")
 					.build();
 
 			Key sessionKey = datastore.newKeyFactory()
@@ -127,7 +127,7 @@ public class LoginResource {
 
 		} catch (Exception e) {
 			txn.rollback();
-			LOG.severe(e.getMessage());
+			e.printStackTrace();
 			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
 		} finally {
 			if (txn.isActive()) {

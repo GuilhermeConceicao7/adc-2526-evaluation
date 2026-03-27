@@ -17,6 +17,8 @@ import pt.unl.fct.di.adc.firstwebapp.util.AuthToken;
 import pt.unl.fct.di.adc.firstwebapp.util.RegisterData;
 import pt.unl.fct.di.adc.firstwebapp.util.Responses.GenericResponse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/DeleteAccount")
@@ -24,7 +26,10 @@ import java.util.logging.Logger;
 public class DeleteResource {
 
     private static final Logger LOG = Logger.getLogger(DeleteResource.class.getName());
-    private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Datastore datastore = DatastoreOptions.newBuilder()
+            .setProjectId("adc-evaluation-65595")
+            .build()
+            .getService();
     private static final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
     private final Gson g = new Gson();
@@ -89,6 +94,22 @@ public class DeleteResource {
                         "The username referred in the operation doesn’t exist in registered accounts");
                 return Response.status(Response.Status.NOT_FOUND).entity(error).build();
             }
+
+
+            Query<Entity> query = Query.newEntityQueryBuilder()
+                    .setKind("UserSession")
+                    .setFilter(StructuredQuery.PropertyFilter.eq("username", input.username))
+                    .build();
+
+            QueryResults<Entity> results = txn.run(query);
+
+            List<Key> keysToDelete = new ArrayList<>();
+
+            results.forEachRemaining(entity -> {
+                keysToDelete.add(entity.getKey());
+            });
+
+            txn.delete(keysToDelete.toArray(new Key[0]));
 
             txn.delete(userKey);
             txn.commit();

@@ -27,7 +27,10 @@ import java.util.logging.Logger;
 public class UsersListResource {
 
     private static final Logger LOG = Logger.getLogger(UsersListResource.class.getName());
-    private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Datastore datastore =  DatastoreOptions.newBuilder()
+            .setProjectId("adc-evaluation-65595")
+            .build()
+            .getService();
     private static final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
     private final Gson g = new Gson();
@@ -90,7 +93,6 @@ public class UsersListResource {
             users.add(new UserInfo(
                     u.getKey().getName(),
                     u.getString("user_name"),
-                    u.getString("user_email"),
                     u.getString("role")
             ));
         });

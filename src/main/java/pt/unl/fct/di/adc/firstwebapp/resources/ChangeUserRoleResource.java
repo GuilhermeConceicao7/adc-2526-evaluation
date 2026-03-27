@@ -14,6 +14,8 @@ import pt.unl.fct.di.adc.firstwebapp.util.ApiError;
 import pt.unl.fct.di.adc.firstwebapp.util.AuthToken;
 import pt.unl.fct.di.adc.firstwebapp.util.Responses.GenericResponse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/ChangeUserRole")
@@ -21,7 +23,10 @@ import java.util.logging.Logger;
 public class ChangeUserRoleResource {
 
     private static final Logger LOG = Logger.getLogger(ChangeUserRoleResource.class.getName());
-    private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Datastore datastore =DatastoreOptions.newBuilder()
+            .setProjectId("adc-evaluation-65595")
+            .build()
+            .getService();
     private static final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
     public ChangeUserRoleResource() {
@@ -102,6 +107,22 @@ public class ChangeUserRoleResource {
             Entity updatedUser = Entity.newBuilder(user)
                     .set("role", newRole)
                     .build();
+
+            Query<Entity> query = Query.newEntityQueryBuilder()
+                    .setKind("UserSession")
+                    .setFilter(StructuredQuery.PropertyFilter.eq("username", input.userId))
+                    .build();
+
+            QueryResults<Entity> results = txn.run(query);
+
+            List<Key> keysToDelete = new ArrayList<>();
+
+            results.forEachRemaining(entity -> {
+                keysToDelete.add(entity.getKey());
+            });
+
+            txn.delete(keysToDelete.toArray(new Key[0]));
+
 
             txn.put(updatedUser);
             txn.commit();

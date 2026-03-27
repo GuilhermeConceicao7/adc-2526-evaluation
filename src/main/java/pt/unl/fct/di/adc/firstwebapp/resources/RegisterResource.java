@@ -28,7 +28,10 @@ import pt.unl.fct.di.adc.firstwebapp.util.Responses.RegisterResponse;
 public class RegisterResource {
 
 	private static final Logger LOG = Logger.getLogger(RegisterResource.class.getName());
-	private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+	private static final Datastore datastore = DatastoreOptions.newBuilder()
+            .setProjectId("adc-evaluation-65595")
+            .build()
+            .getService();
 
 	private final Gson g = new Gson();
 
@@ -62,7 +65,6 @@ public class RegisterResource {
                 user = Entity.newBuilder(userKey)
                         .set("user_name", input.username)
                         .set("user_pwd", DigestUtils.sha512Hex(input.password))
-                        .set("user_email", input.email)
 						.set("phone", input.phone)
 						.set("address", input.address)
 						.set("role", input.role)

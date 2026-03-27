@@ -28,7 +28,10 @@ import java.util.logging.Logger;
 public class ShowAuthenticatedSessionResource {
 
     private static final Logger LOG = Logger.getLogger(ShowAuthenticatedSessionResource.class.getName());
-    private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Datastore datastore = DatastoreOptions.newBuilder()
+            .setProjectId("adc-evaluation-65595")
+            .build()
+            .getService();
     private static final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
     private final Gson g = new Gson();
