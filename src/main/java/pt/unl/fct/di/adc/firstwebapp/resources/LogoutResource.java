@@ -96,21 +96,27 @@ public class LogoutResource {
                 return Response.status(Response.Status.FORBIDDEN).entity(error).build();
             }
 
+            if (role.equals("ADMIN")) {
+                Query<Entity> query = Query.newEntityQueryBuilder()
+                        .setKind("UserSession")
+                        .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
+                        .build();
 
-            Query<Entity> query = Query.newEntityQueryBuilder()
-                    .setKind("UserSession")
-                    .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
-                    .build();
+                QueryResults<Entity> results = txn.run(query);
 
-            QueryResults<Entity> results = txn.run(query);
+                List<Key> keysToDelete = new ArrayList<>();
 
-            List<Key> keysToDelete = new ArrayList<>();
+                results.forEachRemaining(entity -> {
+                    keysToDelete.add(entity.getKey());
+                });
 
-            results.forEachRemaining(entity -> {
-                keysToDelete.add(entity.getKey());
-            });
+                txn.delete(keysToDelete.toArray(new Key[0]));
 
-            txn.delete(keysToDelete.toArray(new Key[0]));
+            } else if (username.equals(usernameSession)) {
+
+                txn.delete(sessionKey);
+
+            }
             txn.commit();
 
             GenericResponse response = new GenericResponse("sucess", "Logout successful");
